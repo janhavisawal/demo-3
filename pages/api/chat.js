@@ -1,11 +1,6 @@
-// pages/api/chat.js - Enhanced SINDA Program Guide API (Version 7)
-import OpenAI from "openai";
+// pages/api/chat.js - Enhanced SINDA Program Guide API (Version 7.1)
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
-// Comprehensive SINDA Programs Database (Updated 2024)
+// Enhanced SINDA Programs Database (Updated 2025)
 const SINDA_PROGRAMS = {
   education: {
     name: "Education Programs",
@@ -221,13 +216,168 @@ const SINDA_PROGRAMS = {
   }
 };
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+// Rate limiting storage (in production, use Redis or database)
+const rateLimit = new Map();
+
+// Request validation schema
+const validateRequest = (req) => {
+  const { message, messages = [], userInfo = {}, conversationStage = 'general' } = req.body;
+  
+  const errors = [];
+  
+  if (!message || typeof message !== 'string') {
+    errors.push('Message is required and must be a string');
+  }
+  
+  if (message && message.length > 2000) {
+    errors.push('Message too long (max 2000 characters)');
+  }
+  
+  if (!Array.isArray(messages)) {
+    errors.push('Messages must be an array');
+  }
+  
+  if (typeof userInfo !== 'object') {
+    errors.push('UserInfo must be an object');
+  }
+  
+  if (typeof conversationStage !== 'string') {
+    errors.push('ConversationStage must be a string');
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: { message: message?.trim(), messages, userInfo, conversationStage }
+  };
+};
+
+// Rate limiting function
+const checkRateLimit = (req) => {
+  const ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.connection.remoteAddress || 'unknown';
+  const now = Date.now();
+  const windowStart = now - 60000; // 1 minute window
+  
+  if (!rateLimit.has(ip)) {
+    rateLimit.set(ip, []);
+  }
+  
+  const requests = rateLimit.get(ip).filter(time => time > windowStart);
+  
+  if (requests.length >= 20) { // Max 20 requests per minute
+    return {
+      limited: true,
+      resetTime: Math.ceil((requests[0] + 60000 - now) / 1000)
+    };
+  }
+  
+  requests.push(now);
+  rateLimit.set(ip, requests);
+  
+  // Cleanup old entries periodically
+  if (Math.random() < 0.01) { // 1% chance
+    const cutoff = now - 300000; // 5 minutes ago
+    for (const [key, times] of rateLimit.entries()) {
+      const filtered = times.filter(time => time > cutoff);
+      if (filtered.length === 0) {
+        rateLimit.delete(key);
+      } else {
+        rateLimit.set(key, filtered);
+      }
+    }
+  }
+  
+  return { limited: false };
+};
+
+// OpenAI API integration with retry logic
+const callOpenAI = async (messages, retries = 3) => {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OpenAI API key not configured');
   }
 
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+          messages,
+          temperature: 0.7,
+          max_tokens: 500,
+          top_p: 0.9,
+          frequency_penalty: 0.3,
+          presence_penalty: 0.4,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`OpenAI API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error(`OpenAI API attempt ${attempt} failed:`, error.message);
+      
+      if (attempt === retries) {
+        throw error;
+      }
+      
+      // Exponential backoff
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+    }
+  }
+};
+
+export default async function handler(req, res) {
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+
+  // Only allow POST requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ 
+      error: 'Method not allowed',
+      message: 'This endpoint only accepts POST requests'
+    });
+  }
+
+  const startTime = Date.now();
+
   try {
-    const { message, messages = [], userInfo = {}, conversationStage = 'general' } = req.body;
+    // Rate limiting
+    const rateLimitResult = checkRateLimit(req);
+    if (rateLimitResult.limited) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        message: `Too many requests. Please try again in ${rateLimitResult.resetTime} seconds.`,
+        retryAfter: rateLimitResult.resetTime
+      });
+    }
+
+    // Request validation
+    const validation = validateRequest(req);
+    if (!validation.isValid) {
+      return res.status(400).json({
+        error: 'Invalid request',
+        message: 'Request validation failed',
+        details: validation.errors
+      });
+    }
+
+    const { message, messages, userInfo, conversationStage } = validation.data;
 
     // Enhanced system prompt for SINDA program navigation
     const systemPrompt = `You are a friendly, knowledgeable SINDA program guide helping people navigate through SINDA's comprehensive programs. Your role is to be helpful, empathetic, and provide accurate information about SINDA services.
@@ -307,7 +457,7 @@ Remember: You're not just providing information - you're helping people access l
     // Build conversation context
     const conversationMessages = [
       { role: "system", content: systemPrompt },
-      ...messages.map(msg => ({
+      ...messages.slice(-8).map(msg => ({
         role: msg.role,
         content: msg.content
       })),
@@ -322,16 +472,8 @@ Remember: You're not just providing information - you're helping people access l
       });
     }
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: conversationMessages,
-      temperature: 0.7,
-      max_tokens: 400,
-      top_p: 0.9,
-      frequency_penalty: 0.3,
-      presence_penalty: 0.4,
-    });
-
+    // Call OpenAI API with retry logic
+    const response = await callOpenAI(conversationMessages);
     const aiMessage = response.choices[0].message.content;
 
     // Enhanced intent detection
@@ -411,6 +553,9 @@ Remember: You're not just providing information - you're helping people access l
       enhancedResponse += `\n\n🌍 **Note**: I can also provide information in ${detectedLanguage.charAt(0).toUpperCase() + detectedLanguage.slice(1)}. SINDA staff are multilingual and ready to assist you in your preferred language.`;
     }
 
+    const processingTime = Date.now() - startTime;
+
+    // Return comprehensive response
     res.status(200).json({ 
       message: enhancedResponse,
       isCrisis,
@@ -420,15 +565,24 @@ Remember: You're not just providing information - you're helping people access l
       usage: response.usage,
       programCategories: Object.keys(SINDA_PROGRAMS),
       timestamp: new Date().toISOString(),
+      processingTime,
       responseMetadata: {
         intentConfidence: suggestedPrograms.length > 0 ? 0.9 : 0.7,
         responseType: isCrisis ? 'crisis_support' : suggestedPrograms.length > 0 ? 'program_guidance' : 'general_info',
-        followUpSuggestions: generateFollowUpSuggestions(suggestedPrograms, isCrisis)
+        followUpSuggestions: generateFollowUpSuggestions(suggestedPrograms, isCrisis),
+        apiVersion: '7.1',
+        modelUsed: process.env.OPENAI_MODEL || "gpt-4o-mini"
       }
     });
 
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('API Error:', {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      userAgent: req.headers['user-agent'],
+      ip: req.headers['x-forwarded-for'] || req.connection.remoteAddress
+    });
     
     // Enhanced fallback with helpful guidance
     const fallbackMessage = `I'm experiencing some technical issues, but I'm still here to help! 
@@ -446,15 +600,26 @@ Remember: You're not just providing information - you're helping people access l
 
 What specific area would you like help with? I'll do my best to guide you even with these technical hiccups!`;
     
-    res.status(200).json({ 
+    const errorResponse = {
       message: fallbackMessage,
       error: true,
+      errorType: error.message.includes('OpenAI') ? 'ai_service' : 'server_error',
       isCrisis: false,
       suggestedPrograms: [],
       programCategories: Object.keys(SINDA_PROGRAMS),
       timestamp: new Date().toISOString(),
-      fallbackReason: error.message || 'Technical difficulties'
-    });
+      processingTime: Date.now() - startTime,
+      fallbackReason: process.env.NODE_ENV === 'development' ? error.message : 'Technical difficulties'
+    };
+
+    // Return appropriate status code based on error type
+    if (error.message.includes('OpenAI API key')) {
+      res.status(500).json(errorResponse);
+    } else if (error.message.includes('Rate limit')) {
+      res.status(429).json(errorResponse);
+    } else {
+      res.status(500).json(errorResponse);
+    }
   }
 }
 
