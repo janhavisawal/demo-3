@@ -27,15 +27,14 @@ import {
   Bar, 
   PieChart as RechartsPieChart, 
   Cell, 
-  Pie,
-  Line
+  Pie
 } from 'recharts';
 
-// Integrated SINDA Platform with both CRM and Assistant
+// Main SINDA Platform Component
 const IntegratedSINDAPlatform = () => {
-  // Shared state between CRM and Assistant
+  // Core platform state
   const [platform, setPlatform] = useState('assistant'); // 'assistant' or 'crm'
-  const [viewHistory, setViewHistory] = useState([platform]);
+  const [viewHistory, setViewHistory] = useState(['assistant']);
   const [apiKey, setApiKey] = useState('');
   const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('english');
@@ -479,55 +478,35 @@ const IntegratedSINDAPlatform = () => {
     setMessageId(prev => prev + 1);
   }, [messageId]);
 
-  // OpenAI Integration
-  const callOpenAI = async (userMessage, conversationHistory = []) => {
+  // API call function with proper error handling
+  const callAPI = async (userMessage, conversationHistory = []) => {
     if (!apiKey) {
       return "Please set your OpenAI API key to enable AI-powered conversations. Click the settings button to add your API key.";
     }
 
     try {
-      const systemPrompt = `You are a SINDA CRM assistant helping staff manage contacts, tickets, and programs. You have access to:
-      
-1. Contact Management: ${crmData.contacts.length} contacts in the system
-2. Ticket Management: ${crmData.tickets.length} active tickets
-3. Agent Management: ${crmData.agents.length} agents available
-4. Analytics: Real-time metrics and reporting
-
-Key SINDA Programs:
-- Education Support (STEP, Bursaries, ITE Support)
-- Family Services (Counseling, Financial Aid, Crisis Support)
-- Youth Development (Youth Club, Leadership, Mentoring)
-- Community Outreach (Door-to-door, Events, Advocacy)
-
-Help with CRM tasks like finding contacts, updating tickets, generating reports, and providing insights from the data.`;
-
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            ...conversationHistory.slice(-6),
-            { role: 'user', content: userMessage }
-          ],
-          max_tokens: 500,
-          temperature: 0.7
-        })
+          message: userMessage,
+          messages: conversationHistory,
+          userInfo: {},
+          conversationStage: 'general'
+        }),
       });
 
       if (!response.ok) {
-        throw new Error(`OpenAI API error: ${response.status}`);
+        throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
-      return data.choices[0].message.content;
+      return data.message || "I'm here to help you with SINDA programs and services.";
     } catch (error) {
-      console.error('OpenAI API Error:', error);
-      return `I'm having trouble connecting to the AI service. I can still help you navigate the CRM system manually. Current system status: ${crmData.analytics.activeTickets} active tickets, ${crmData.analytics.totalContacts} total contacts.`;
+      console.error('API Error:', error);
+      return `I'm having trouble connecting to the AI service. I can still help you navigate the system manually. Current system status: ${crmData.analytics.activeTickets} active tickets, ${crmData.analytics.totalContacts} total contacts.`;
     }
   };
 
@@ -546,14 +525,21 @@ Help with CRM tasks like finding contacts, updating tickets, generating reports,
     }));
 
     try {
-      const response = await callOpenAI(userMessage, conversationHistory);
+      let response;
+      if (platform === 'crm') {
+        // CRM-specific response
+        response = await callAPI(userMessage, conversationHistory);
+      } else {
+        // Assistant-specific response
+        response = await callAPI(userMessage, conversationHistory);
+      }
       addMessage(response, false, { aiGenerated: true });
     } catch (error) {
       addMessage("I'm experiencing technical difficulties. Here's what I can tell you: We have " + crmData.analytics.activeTickets + " active tickets and " + crmData.analytics.totalContacts + " contacts in the system.", false);
     } finally {
       setIsTyping(false);
     }
-  }, [inputMessage, isTyping, addMessage, messages, callOpenAI]);
+  }, [inputMessage, isTyping, addMessage, messages, platform, apiKey]);
 
   // Handle program button clicks for Assistant
   const handleProgramClick = useCallback(async (categoryTitle) => {
@@ -1439,7 +1425,7 @@ Which area would you like to explore in detail?`;
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <div className="bg-white rounded-2xl p-6 max-w-md w-full">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Add New Contact</h3>
+            <h3 className="text-lg font-semibold text-gray-808">Add New Contact</h3>
             <button onClick={() => setShowContactModal(false)}>
               <X size={20} />
             </button>
@@ -1675,14 +1661,14 @@ Which area would you like to explore in detail?`;
   // SINDA Assistant Chat Interface
   const AssistantInterface = () => (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl animate-slide-up">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
         {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20 animate-wave"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20"></div>
           <div className="flex items-center justify-between relative z-10">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center animate-glow">
-                <BookOpen className="text-white animate-pulse" size={28} />
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <BookOpen className="text-white" size={28} />
               </div>
               <div>
                 <h3 className="text-2xl font-bold">SINDA Assistant</h3>
@@ -1725,8 +1711,7 @@ Which area would you like to explore in detail?`;
                 <button
                   key={category.id}
                   onClick={() => handleProgramClick(category.title)}
-                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105 animate-fade-in"
-                  style={{animationDelay: `${index * 0.1}s`}}
+                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105"
                 >
                   <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
                     <IconComponent className="text-white" size={20} />
@@ -1744,8 +1729,8 @@ Which area would you like to explore in detail?`;
         {/* Messages */}
         <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
           {messages.length === 0 && (
-            <div className="text-center py-8 animate-fade-in">
-              <div className="text-blue-400 mb-4 animate-bounce-gentle">
+            <div className="text-center py-8">
+              <div className="text-blue-400 mb-4">
                 <MessageCircle size={48} className="mx-auto" />
               </div>
               <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
@@ -1761,8 +1746,7 @@ Which area would you like to explore in detail?`;
                   <button
                     key={index}
                     onClick={help.action}
-                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105 animate-slide-up"
-                    style={{animationDelay: `${index * 0.1}s`}}
+                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105"
                   >
                     {help.text}
                   </button>
@@ -1772,7 +1756,7 @@ Which area would you like to explore in detail?`;
           )}
 
           {messages.map((msg, index) => (
-            <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'} animate-slide-up`} style={{animationDelay: `${index * 0.05}s`}}>
+            <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
               <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
                 msg.isUser 
                   ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
@@ -1794,7 +1778,7 @@ Which area would you like to explore in detail?`;
           ))}
           
           {isTyping && (
-            <div className="flex justify-start animate-slide-up">
+            <div className="flex justify-start">
               <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
                 <div className="flex items-center space-x-3">
                   <div className="flex space-x-1">
@@ -1832,7 +1816,7 @@ Which area would you like to explore in detail?`;
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isTyping}
-              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none animate-glow"
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none"
             >
               <Send size={20} />
             </button>
@@ -1844,70 +1828,69 @@ Which area would you like to explore in detail?`;
 
   // Analytics Dashboard for Assistant
   const AssistantAnalyticsDashboard = () => {
-    // Use the same data as CRM analytics
     return (
       <div className="space-y-8 p-6">
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg hover:scale-105 transition-all duration-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2 animate-counter">{crmData.realTimeMetrics.activeUsers}</p>
+                <p className="text-3xl font-bold text-blue-600 mt-2">{crmData.realTimeMetrics.activeUsers}</p>
                 <div className="flex items-center mt-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   <span className="text-green-600 text-xs">+15% from last week</span>
                 </div>
               </div>
-              <div className="bg-blue-100 p-3 rounded-xl animate-bounce-gentle">
+              <div className="bg-blue-100 p-3 rounded-xl">
                 <Users className="text-blue-600" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up" style={{animationDelay: '0.1s'}}>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-100 shadow-lg hover:scale-105 transition-all duration-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Families Helped</p>
-                <p className="text-3xl font-bold text-cyan-600 mt-2 animate-counter">{crmData.analytics.totalContacts.toLocaleString()}</p>
+                <p className="text-3xl font-bold text-cyan-600 mt-2">{crmData.analytics.totalContacts.toLocaleString()}</p>
                 <div className="flex items-center mt-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   <span className="text-green-600 text-xs">+234 this month</span>
                 </div>
               </div>
-              <div className="bg-cyan-100 p-3 rounded-xl animate-bounce-gentle">
+              <div className="bg-cyan-100 p-3 rounded-xl">
                 <Heart className="text-cyan-600" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up" style={{animationDelay: '0.2s'}}>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-100 shadow-lg hover:scale-105 transition-all duration-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Financial Aid</p>
-                <p className="text-3xl font-bold text-indigo-600 mt-2 animate-counter">${(crmData.analytics.financialAidDistributed / 1000000).toFixed(1)}M</p>
+                <p className="text-3xl font-bold text-indigo-600 mt-2">${(crmData.analytics.financialAidDistributed / 1000000).toFixed(1)}M</p>
                 <div className="flex items-center mt-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   <span className="text-green-600 text-xs">Distributed this year</span>
                 </div>
               </div>
-              <div className="bg-indigo-100 p-3 rounded-xl animate-bounce-gentle">
+              <div className="bg-indigo-100 p-3 rounded-xl">
                 <DollarSign className="text-indigo-600" size={24} />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-100 shadow-lg hover:scale-105 transition-all duration-500 animate-slide-up" style={{animationDelay: '0.3s'}}>
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-100 shadow-lg hover:scale-105 transition-all duration-500">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm font-medium">Job Placements</p>
-                <p className="text-3xl font-bold text-teal-600 mt-2 animate-counter">{crmData.analytics.jobPlacements}</p>
+                <p className="text-3xl font-bold text-teal-600 mt-2">{crmData.analytics.jobPlacements}</p>
                 <div className="flex items-center mt-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
                   <span className="text-green-600 text-xs">+89 this quarter</span>
                 </div>
               </div>
-              <div className="bg-teal-100 p-3 rounded-xl animate-bounce-gentle">
+              <div className="bg-teal-100 p-3 rounded-xl">
                 <Award className="text-teal-600" size={24} />
               </div>
             </div>
@@ -1917,7 +1900,7 @@ Which area would you like to explore in detail?`;
         {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Monthly Engagement Trend */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg animate-slide-up">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800">Monthly Engagement</h3>
               <div className="flex items-center gap-2">
@@ -1957,7 +1940,7 @@ Which area would you like to explore in detail?`;
           </div>
 
           {/* Program Distribution */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg animate-slide-up">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg">
             <h3 className="text-xl font-bold text-gray-800 mb-6">Program Distribution</h3>
             <ResponsiveContainer width="100%" height={300}>
               <RechartsPieChart>
@@ -2007,8 +1990,8 @@ Which area would you like to explore in detail?`;
   // Analytics Overlay for Assistant
   const AnalyticsOverlay = () => (
     showAnalytics && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-        <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
           <div className="p-8">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800">Real-time Analytics Dashboard</h2>
@@ -2034,10 +2017,10 @@ Which area would you like to explore in detail?`;
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
       {/* Header with Platform Switcher */}
-      <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-blue-200 animate-slide-down">
+      <div className="bg-white/80 backdrop-blur-sm shadow-lg border-b border-blue-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg animate-glow">
+            <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-3 rounded-2xl shadow-lg">
               <BookOpen className="text-white" size={28} />
             </div>
             <div>
@@ -2098,7 +2081,7 @@ Which area would you like to explore in detail?`;
                   onClick={() => navigateToView(nav.id)}
                   className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
                     currentView === nav.id
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg animate-glow'
+                      ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
                       : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                   }`}
                 >
@@ -2124,10 +2107,10 @@ Which area would you like to explore in detail?`;
           {/* Assistant Navigation */}
           <div className="mb-8 flex flex-wrap gap-2 justify-center">
             <button
-              onClick={() => setCurrentView('chat')}
+              onClick={() => setCurrentStep('chat')}
               className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
-                currentView === 'chat' 
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg animate-glow' 
+                currentStep === 'chat' 
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
               }`}
             >
@@ -2135,10 +2118,10 @@ Which area would you like to explore in detail?`;
               Chat
             </button>
             <button
-              onClick={() => setCurrentView('analytics')}
+              onClick={() => setCurrentStep('analytics')}
               className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
-                currentView === 'analytics' 
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg animate-glow' 
+                currentStep === 'analytics' 
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
                   : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
               }`}
             >
@@ -2148,8 +2131,8 @@ Which area would you like to explore in detail?`;
           </div>
 
           {/* Assistant Main Content */}
-          {currentView === 'chat' && <AssistantInterface />}
-          {currentView === 'analytics' && <AssistantAnalyticsDashboard />}
+          {currentStep === 'chat' && <AssistantInterface />}
+          {currentStep === 'analytics' && <AssistantAnalyticsDashboard />}
         </div>
       )}
 
@@ -2162,7 +2145,7 @@ Which area would you like to explore in detail?`;
       <AnalyticsOverlay />
       
       {/* Footer */}
-      <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 mt-12 animate-slide-up">
+      <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 mt-12">
         <div className="max-w-7xl mx-auto flex justify-between items-center text-sm py-6 px-6">
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
@@ -2188,176 +2171,6 @@ Which area would you like to explore in detail?`;
           </div>
         </div>
       </div>
-
-      {/* Enhanced Styling */}
-      <style jsx>{`
-        @keyframes bounce {
-          0%, 80%, 100% { 
-            transform: scale(0.8); 
-            opacity: 0.6; 
-          }
-          40% { 
-            transform: scale(1.2); 
-            opacity: 1; 
-          }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.6; }
-        }
-
-        @keyframes float-slow {
-          0%, 100% { 
-            transform: translateY(0px) rotate(0deg); 
-          }
-          50% { 
-            transform: translateY(-20px) rotate(180deg); 
-          }
-        }
-
-        @keyframes float-medium {
-          0%, 100% { 
-            transform: translateY(0px) rotate(0deg); 
-          }
-          50% { 
-            transform: translateY(-15px) rotate(90deg); 
-          }
-        }
-
-        @keyframes float-fast {
-          0%, 100% { 
-            transform: translateY(0px) rotate(0deg); 
-          }
-          50% { 
-            transform: translateY(-25px) rotate(270deg); 
-          }
-        }
-
-        @keyframes glow {
-          0%, 100% { 
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); 
-          }
-          50% { 
-            box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 40px rgba(6, 182, 212, 0.6); 
-          }
-        }
-
-        @keyframes gradient {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        @keyframes slide-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes bounce-gentle {
-          0%, 100% { 
-            transform: translateY(0); 
-          }
-          50% { 
-            transform: translateY(-10px); 
-          }
-        }
-
-        @keyframes wave {
-          0%, 100% { 
-            transform: translateX(0) scaleX(1); 
-          }
-          50% { 
-            transform: translateX(10px) scaleX(1.05); 
-          }
-        }
-
-        @keyframes counter {
-          from { 
-            opacity: 0;
-            transform: scale(0.5);
-          }
-          to { 
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        
-        .animate-bounce {
-          animation: bounce 1.4s infinite;
-        }
-        
-        .animate-pulse {
-          animation: pulse 2s infinite;
-        }
-
-        .animate-float-slow {
-          animation: float-slow 6s ease-in-out infinite;
-        }
-
-        .animate-float-medium {
-          animation: float-medium 4s ease-in-out infinite;
-        }
-
-        .animate-float-fast {
-          animation: float-fast 3s ease-in-out infinite;
-        }
-
-        .animate-glow {
-          animation: glow 3s ease-in-out infinite;
-        }
-
-        .animate-gradient {
-          background-size: 400% 400%;
-          animation: gradient 3s ease infinite;
-        }
-
-        .animate-slide-up {
-          animation: slide-up 0.6s ease-out forwards;
-        }
-
-        .animate-slide-down {
-          animation: slide-down 0.6s ease-out forwards;
-        }
-
-        .animate-fade-in {
-          animation: fade-in 1s ease-out forwards;
-        }
-
-        .animate-bounce-gentle {
-          animation: bounce-gentle 2s ease-in-out infinite;
-        }
-
-        .animate-wave {
-          animation: wave 4s ease-in-out infinite;
-        }
-
-        .animate-counter {
-          animation: counter 0.8s ease-out forwards;
-        }
-      `}</style>
     </div>
   );
 };
