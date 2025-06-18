@@ -1,8 +1,83 @@
-// pages/index.js - Fixed Import Issue
+// pages/index.js - Enhanced SINDA Assistant Home Page
 import Head from 'next/head';
+import { useState, useEffect } from 'react';
 import SINDAAssistant from '../components/SINDAAssistant';
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Initialize page
+  useEffect(() => {
+    // Simulate loading and error handling
+    const initializePage = async () => {
+      try {
+        // Add any initialization logic here
+        await new Promise(resolve => setTimeout(resolve, 100)); // Brief loading
+        setIsLoading(false);
+      } catch (err) {
+        setError('Failed to initialize SINDA Assistant');
+        setIsLoading(false);
+      }
+    };
+
+    initializePage();
+  }, []);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <>
+        <Head>
+          <title>Loading SINDA Assistant...</title>
+          <meta name="robots" content="noindex" />
+        </Head>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-700">Loading SINDA Assistant...</h2>
+            <p className="text-gray-500">Preparing your community support platform</p>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <>
+        <Head>
+          <title>Error - SINDA Assistant</title>
+          <meta name="robots" content="noindex" />
+        </Head>
+        <div className="min-h-screen bg-gradient-to-br from-red-50 to-red-100 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center shadow-xl">
+            <div className="text-red-500 mb-4">
+              <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Something went wrong</h2>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <div className="space-y-3">
+              <button 
+                onClick={() => window.location.reload()} 
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Try Again
+              </button>
+              <div className="text-sm text-gray-500">
+                <p>Need immediate help?</p>
+                <p className="font-semibold">Call SINDA: 1800 295 3333</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -199,6 +274,25 @@ export default function Home() {
           }}
         />
         
+        {/* Service Worker for PWA */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `
+          }}
+        />
+        
         {/* Security Headers */}
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="X-Frame-Options" content="DENY" />
@@ -208,13 +302,28 @@ export default function Home() {
         
         {/* Performance Hints */}
         <link rel="prefetch" href="/api/chat" />
+        
+        {/* Emergency Contact for SEO */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "EmergencyService",
+              "name": "SINDA Emergency Hotline",
+              "telephone": "+65-1800-295-3333",
+              "availableLanguage": ["en", "ta", "hi", "ml"],
+              "hoursAvailable": "24/7"
+            })
+          }}
+        />
       </Head>
       
       <main className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
         {/* Skip to content link for accessibility */}
         <a 
           href="#main-content" 
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50 transition-all duration-300"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-lg z-50 transition-all duration-300 focus:z-[60]"
         >
           Skip to main content
         </a>
@@ -241,6 +350,67 @@ export default function Home() {
           <p>Address: 1 Beatty Road, Singapore 209943</p>
           <p>Email: queries@sinda.org.sg</p>
         </div>
+        
+        {/* Performance monitoring script */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Monitor Core Web Vitals
+              function getCLS(onPerfEntry) {
+                if (onPerfEntry && onPerfEntry instanceof Function) {
+                  import('web-vitals').then(({ getCLS }) => {
+                    getCLS(onPerfEntry);
+                  });
+                }
+              }
+              
+              function getFID(onPerfEntry) {
+                if (onPerfEntry && onPerfEntry instanceof Function) {
+                  import('web-vitals').then(({ getFID }) => {
+                    getFID(onPerfEntry);
+                  });
+                }
+              }
+              
+              function getFCP(onPerfEntry) {
+                if (onPerfEntry && onPerfEntry instanceof Function) {
+                  import('web-vitals').then(({ getFCP }) => {
+                    getFCP(onPerfEntry);
+                  });
+                }
+              }
+              
+              function getLCP(onPerfEntry) {
+                if (onPerfEntry && onPerfEntry instanceof Function) {
+                  import('web-vitals').then(({ getLCP }) => {
+                    getLCP(onPerfEntry);
+                  });
+                }
+              }
+              
+              function getTTFB(onPerfEntry) {
+                if (onPerfEntry && onPerfEntry instanceof Function) {
+                  import('web-vitals').then(({ getTTFB }) => {
+                    getTTFB(onPerfEntry);
+                  });
+                }
+              }
+              
+              // Log performance metrics
+              function sendToAnalytics(metric) {
+                console.log('Performance metric:', metric);
+                // You can send to your analytics service here
+              }
+              
+              // Initialize performance monitoring
+              getCLS(sendToAnalytics);
+              getFID(sendToAnalytics);
+              getFCP(sendToAnalytics);
+              getLCP(sendToAnalytics);
+              getTTFB(sendToAnalytics);
+            `
+          }}
+        />
       </main>
     </>
   );
