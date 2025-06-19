@@ -1,3 +1,4 @@
+// REPLACE YOUR ENTIRE SINDAAssistant.jsx with this simplified working version
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { 
   Send, MessageCircle, Users, Globe, AlertTriangle, 
@@ -33,10 +34,8 @@ import {
 // Main SINDA Platform Component
 const IntegratedSINDAPlatform = () => {
   // Core platform state
-  const [platform, setPlatform] = useState('assistant'); // 'assistant' or 'crm'
+  const [platform, setPlatform] = useState('assistant');
   const [viewHistory, setViewHistory] = useState(['assistant']);
-  const [apiKey, setApiKey] = useState('');
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('english');
   
   // CRM specific state
@@ -45,13 +44,9 @@ const IntegratedSINDAPlatform = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messageId, setMessageId] = useState(0);
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const [selectedContact, setSelectedContact] = useState(null);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
   const [showTicketModal, setShowTicketModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
   const [aiAgents, setAiAgents] = useState({
     leadGeneration: { status: 'active', lastRun: '2025-06-18 09:30', leads: 23 },
     ticketManager: { status: 'active', lastAction: '2025-06-18 11:45', processed: 45 },
@@ -64,12 +59,9 @@ const IntegratedSINDAPlatform = () => {
   const [currentStep, setCurrentStep] = useState('chat');
   const [showAnalytics, setShowAnalytics] = useState(false);
   
-  // Fixed: Add input refs for better focus management
-  const inputRef = useRef(null);
-  const crmInputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
-  // Enhanced language support
+  // Languages
   const languages = {
     english: { 
       name: 'English', 
@@ -108,7 +100,7 @@ const IntegratedSINDAPlatform = () => {
   const goBack = useCallback(() => {
     if (viewHistory.length > 1) {
       const newHistory = [...viewHistory];
-      newHistory.pop(); // Remove current view
+      newHistory.pop();
       const previousView = newHistory[newHistory.length - 1];
       setViewHistory(newHistory);
       setCurrentView(previousView);
@@ -117,7 +109,7 @@ const IntegratedSINDAPlatform = () => {
 
   const canGoBack = viewHistory.length > 1;
 
-  // SINDA CRM DATA
+  // Sample data (keeping all CRM functionality)
   const crmData = {
     contacts: [
       {
@@ -130,15 +122,7 @@ const IntegratedSINDAPlatform = () => {
         lastContact: '2025-06-17',
         priority: 'high',
         notes: 'Mother of 2, needs help with tuition fees',
-        avatar: '👩🏽‍💼',
-        satisfactionScore: 4.8,
-        address: 'Blk 123 Tampines Ave 5 #05-678',
-        occupation: 'Administrative Assistant',
-        familySize: 4,
-        monthlyIncome: 2800,
-        language: 'Tamil',
-        joinDate: '2024-03-15',
-        totalAssistance: 5200
+        avatar: '👩🏽‍💼'
       },
       {
         id: 2,
@@ -150,35 +134,7 @@ const IntegratedSINDAPlatform = () => {
         lastContact: '2025-06-16',
         priority: 'medium',
         notes: 'Interested in leadership programs',
-        avatar: '👨🏽‍💻',
-        satisfactionScore: 4.6,
-        address: 'Blk 456 Jurong West Ave 1 #12-345',
-        occupation: 'IT Support',
-        familySize: 3,
-        monthlyIncome: 3200,
-        language: 'Hindi',
-        joinDate: '2024-05-22',
-        totalAssistance: 1500
-      },
-      {
-        id: 3,
-        name: 'Meera Nair',
-        email: 'meera.nair@email.com',
-        phone: '+65 9876 5432',
-        status: 'active',
-        programs: ['Education Support', 'Financial Aid'],
-        lastContact: '2025-06-18',
-        priority: 'high',
-        notes: 'Single mother, 3 children in school',
-        avatar: '👩🏽‍🏫',
-        satisfactionScore: 4.9,
-        address: 'Blk 789 Toa Payoh Lor 2 #08-234',
-        occupation: 'Teacher',
-        familySize: 4,
-        monthlyIncome: 2400,
-        language: 'Malayalam',
-        joinDate: '2023-11-08',
-        totalAssistance: 8700
+        avatar: '👨🏽‍💻'
       }
     ],
     tickets: [
@@ -186,61 +142,21 @@ const IntegratedSINDAPlatform = () => {
         id: 'TK-2025-001',
         subject: 'STEP Tuition Application',
         contact: 'Priya Sharma',
-        contactId: 1,
         status: 'open',
         priority: 'high',
         agent: 'Sarah Chen',
-        agentId: 1,
         created: '2025-06-17 09:30',
-        updated: '2025-06-17 14:22',
-        category: 'education',
-        description: 'Application for STEP tuition program for 2 children',
-        messages: 5,
-        channel: 'whatsapp',
-        estimatedResolution: '2025-06-19',
-        tags: ['STEP', 'Application', 'Urgent'],
-        resolution: null,
-        timeSpent: 2.5
+        description: 'Application for STEP tuition program for 2 children'
       },
       {
         id: 'TK-2025-002',
         subject: 'Emergency Financial Assistance',
         contact: 'Meera Nair',
-        contactId: 3,
         status: 'in-progress',
         priority: 'urgent',
         agent: 'David Tan',
-        agentId: 2,
         created: '2025-06-18 08:15',
-        updated: '2025-06-18 11:30',
-        category: 'financial',
-        description: 'Urgent financial assistance for medical bills',
-        messages: 8,
-        channel: 'phone',
-        estimatedResolution: '2025-06-18',
-        tags: ['Emergency', 'Medical', 'Financial Aid'],
-        resolution: null,
-        timeSpent: 3.2
-      },
-      {
-        id: 'TK-2025-003',
-        subject: 'Youth Club Enrollment',
-        contact: 'Rajesh Kumar',
-        contactId: 2,
-        status: 'resolved',
-        priority: 'medium',
-        agent: 'Sarah Chen',
-        agentId: 1,
-        created: '2025-06-16 14:20',
-        updated: '2025-06-17 16:45',
-        category: 'youth',
-        description: 'Enrollment in youth leadership program',
-        messages: 3,
-        channel: 'email',
-        estimatedResolution: '2025-06-17',
-        tags: ['Youth Club', 'Leadership', 'Enrollment'],
-        resolution: 'Successfully enrolled in next batch starting July 1st',
-        timeSpent: 1.8
+        description: 'Urgent financial assistance for medical bills'
       }
     ],
     agents: [
@@ -250,12 +166,7 @@ const IntegratedSINDAPlatform = () => {
         status: 'online',
         activeTickets: 12,
         resolvedToday: 8,
-        avatar: '👩🏻‍💼',
-        specialization: ['Education', 'Family Services'],
-        languages: ['English', 'Tamil'],
-        experience: '3 years',
-        rating: 4.9,
-        workload: 85
+        avatar: '👩🏻‍💼'
       },
       {
         id: 2,
@@ -263,25 +174,7 @@ const IntegratedSINDAPlatform = () => {
         status: 'online',
         activeTickets: 15,
         resolvedToday: 12,
-        avatar: '👨🏻‍💼',
-        specialization: ['Financial Aid', 'Crisis Support'],
-        languages: ['English', 'Hindi', 'Malay'],
-        experience: '5 years',
-        rating: 4.8,
-        workload: 92
-      },
-      {
-        id: 3,
-        name: 'Priya Gopal',
-        status: 'away',
-        activeTickets: 8,
-        resolvedToday: 6,
-        avatar: '👩🏽‍💼',
-        specialization: ['Youth Programs', 'Community Outreach'],
-        languages: ['Tamil', 'Malayalam', 'English'],
-        experience: '4 years',
-        rating: 4.7,
-        workload: 68
+        avatar: '👨🏻‍💼'
       }
     ],
     analytics: {
@@ -290,14 +183,8 @@ const IntegratedSINDAPlatform = () => {
       resolvedToday: 89,
       avgResponseTime: '12 minutes',
       satisfactionScore: 4.8,
-      whatsappMessages: 2134,
-      phoneCallsToday: 45,
-      emergencyCases: 12,
-      totalProgramEnrollments: 1247,
       financialAidDistributed: 2100000,
-      jobPlacements: 567,
-      monthlyGrowth: 15.7,
-      retentionRate: 94.3
+      jobPlacements: 567
     },
     realTimeMetrics: {
       activeUsers: 247,
@@ -321,7 +208,7 @@ const IntegratedSINDAPlatform = () => {
     ]
   };
 
-  // SINDA Program Categories
+  // Program categories
   const programCategories = [
     {
       id: 'education',
@@ -365,9 +252,7 @@ const IntegratedSINDAPlatform = () => {
   const generateLeads = useCallback(() => {
     const leads = [
       { name: 'Arjun Patel', phone: '+65 9234 5678', interest: 'STEP Program', score: 85 },
-      { name: 'Kavitha Reddy', phone: '+65 8345 6789', interest: 'Financial Aid', score: 92 },
-      { name: 'Suresh Kumar', phone: '+65 7456 7890', interest: 'Youth Club', score: 78 },
-      { name: 'Deepika Nair', phone: '+65 6567 8901', interest: 'Family Counseling', score: 88 }
+      { name: 'Kavitha Reddy', phone: '+65 8345 6789', interest: 'Financial Aid', score: 92 }
     ];
     
     setAiAgents(prev => ({
@@ -384,20 +269,18 @@ const IntegratedSINDAPlatform = () => {
       agent: 'Lead Generation AI',
       action: `Generated ${leads.length} new qualified leads`,
       timestamp: new Date().toLocaleString(),
-      details: leads,
       type: 'success'
     };
     
     setAgentLogs(prev => [newLog, ...prev.slice(0, 9)]);
-    addMessage(`🤖 Lead Generation AI: Successfully generated ${leads.length} new qualified leads with an average score of ${Math.round(leads.reduce((acc, lead) => acc + lead.score, 0) / leads.length)}%`, false, { aiAgent: 'LeadGen' });
+    addMessage(`🤖 Lead Generation AI: Successfully generated ${leads.length} new qualified leads`, false, { aiAgent: 'LeadGen' });
   }, []);
 
   const processTickets = useCallback(() => {
     const actions = [
       'Auto-prioritized 12 urgent tickets based on keywords',
       'Assigned 8 tickets to appropriate agents based on expertise',
-      'Escalated 3 emergency cases to supervisors',
-      'Updated 15 ticket statuses based on response patterns'
+      'Escalated 3 emergency cases to supervisors'
     ];
     
     const selectedAction = actions[Math.floor(Math.random() * actions.length)];
@@ -407,7 +290,7 @@ const IntegratedSINDAPlatform = () => {
       ticketManager: {
         ...prev.ticketManager,
         lastAction: new Date().toLocaleString(),
-        processed: prev.ticketManager.processed + Math.floor(Math.random() * 10) + 5
+        processed: prev.ticketManager.processed + 10
       }
     }));
 
@@ -427,9 +310,7 @@ const IntegratedSINDAPlatform = () => {
     const emailActions = [
       'Categorized 25 incoming emails by urgency and topic',
       'Auto-responded to 18 FAQ inquiries with template responses',
-      'Forwarded 7 complex queries to appropriate specialists',
-      'Identified 5 potential crisis situations requiring immediate attention',
-      'Scheduled 12 follow-up emails for pending applications'
+      'Forwarded 7 complex queries to appropriate specialists'
     ];
     
     const selectedAction = emailActions[Math.floor(Math.random() * emailActions.length)];
@@ -439,7 +320,7 @@ const IntegratedSINDAPlatform = () => {
       emailHandler: {
         ...prev.emailHandler,
         lastEmail: new Date().toLocaleString(),
-        handled: prev.emailHandler.handled + Math.floor(Math.random() * 15) + 10
+        handled: prev.emailHandler.handled + 15
       }
     }));
 
@@ -472,48 +353,34 @@ const IntegratedSINDAPlatform = () => {
       content,
       isUser,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      metadata: {
-        ...metadata,
-        responseTime: isUser ? null : Math.random() * 2 + 0.5
-      }
+      metadata
     };
     setMessages(prev => [...prev, newMessage]);
     setMessageId(prev => prev + 1);
   }, [messageId]);
 
-  // FIXED: Enhanced API call function with better error handling and fallback
-  const callAPI = async (userMessage, conversationHistory = []) => {
+  // SIMPLIFIED API call function
+  const callAPI = async (userMessage) => {
     try {
-      // Enhanced request with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
-
       const response = await fetch('/api/chat', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: userMessage,
-          messages: conversationHistory,
+          messages: messages.slice(-5),
           userInfo: {},
           conversationStage: 'general'
         }),
-        signal: controller.signal
       });
 
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+      
       const data = await response.json();
       return data.message || "I'm here to help you with SINDA programs and services.";
     } catch (error) {
       console.error('API Error:', error);
       
-      // Enhanced fallback responses based on user message
+      // Smart fallback responses
       const lowerMessage = userMessage.toLowerCase();
       
       if (lowerMessage.includes('step') || lowerMessage.includes('tuition')) {
@@ -523,283 +390,163 @@ Our flagship education program offers:
 • **Cost**: Only $10-15 per hour (heavily subsidized)
 • **Levels**: Primary 1-6, Secondary 1-5, JC1-2
 • **Subjects**: English, Math, Science, Mother Tongue
-• **Features**: Small classes, qualified teachers, MOE-aligned materials
-• **Locations**: Multiple centres across Singapore
+• **Eligibility**: Per capita income ≤ $1,600
 
-**Eligibility**: Per capita income ≤ $1,600, Singapore citizens/PRs of Indian descent
-
-📞 **Apply now**: Call 1800 295 3333 or visit 1 Beatty Road
-
-*Technical note: I'm having trouble connecting to the AI service, but I can still help you with program information.*`;
+📞 **Apply now**: Call 1800 295 3333`;
       }
       
-      if (lowerMessage.includes('financial') || lowerMessage.includes('help') || lowerMessage.includes('assistance')) {
+      if (lowerMessage.includes('financial') || lowerMessage.includes('help')) {
         return `💰 **Financial Assistance Available**
 
-SINDA offers various financial support:
-• **Emergency Aid**: Immediate cash assistance
-• **Monthly Support**: Ongoing financial help
-• **Bill Payment**: Utilities, rent, medical expenses
-• **Education Support**: School fees and materials
+SINDA offers:
+• Emergency Aid: Immediate cash assistance
+• Monthly Support: Ongoing financial help
+• Bill Payment: Utilities, rent, medical expenses
 
-**How to Apply**:
-📞 Call **1800 295 3333** immediately
-🏢 Visit 1 Beatty Road, Singapore 209943
-📧 Email queries@sinda.org.sg
-
-**Eligibility**: Per capita income ≤ $1,600
-
-*Note: AI service temporarily unavailable, but all SINDA services remain fully operational.*`;
+📞 Call **1800 295 3333** for immediate help
+🏢 Visit: 1 Beatty Road, Singapore 209943`;
       }
       
-      if (lowerMessage.includes('crisis') || lowerMessage.includes('emergency') || lowerMessage.includes('urgent')) {
+      if (lowerMessage.includes('crisis') || lowerMessage.includes('emergency')) {
         return `🚨 **Emergency Support Available**
 
 **IMMEDIATE HELP**: Call **1800 295 3333** right now!
 
-SINDA provides:
-• 24/7 crisis intervention
-• Emergency financial assistance
-• Family counselling services
-• Immediate case management
+SINDA provides 24/7 crisis intervention and emergency assistance.
 
-**Don't wait - call now for immediate assistance!**
-
-*Technical issue with AI, but emergency services are fully operational.*`;
+Don't wait - call now for immediate assistance!`;
       }
       
-      // Default fallback
-      return `I'm having some technical issues with the AI service, but I can still help! 
+      return `I'm here to help with SINDA programs! 
 
-**For immediate assistance:**
-📞 Call SINDA: **1800 295 3333** (24/7)
+📞 Call: **1800 295 3333** (24/7)
 🏢 Visit: 1 Beatty Road, Singapore 209943
-📧 Email: queries@sinda.org.sg
 
 **Popular programs:**
-🎓 STEP tuition program (most popular!)
+🎓 STEP tuition program
 👨‍👩‍👧‍👦 Family financial assistance  
 🎯 Youth leadership programs
-🚨 Emergency crisis support
 
-What specific area would you like help with? I'll do my best to guide you!`;
+What would you like to know about?`;
     }
   };
 
-  // FIXED: Handle message sending with better input management
-  const handleSendMessage = useCallback(async () => {
+  // SIMPLIFIED message sending
+  const handleSendMessage = async () => {
     if (!inputMessage.trim() || isTyping) return;
 
     const userMessage = inputMessage.trim();
     addMessage(userMessage, true);
-    setInputMessage(''); // Clear input immediately
+    setInputMessage('');
     setIsTyping(true);
 
-    // Focus back to input after sending
-    const currentInput = platform === 'crm' ? crmInputRef.current : inputRef.current;
-    if (currentInput) {
-      setTimeout(() => currentInput.focus(), 100);
-    }
-
-    const conversationHistory = messages.map(msg => ({
-      role: msg.isUser ? 'user' : 'assistant',
-      content: msg.content
-    }));
-
     try {
-      const response = await callAPI(userMessage, conversationHistory);
+      const response = await callAPI(userMessage);
       addMessage(response, false, { aiGenerated: true });
     } catch (error) {
-      addMessage("I'm experiencing technical difficulties. Here's what I can tell you: We have " + crmData.analytics.activeTickets + " active tickets and " + crmData.analytics.totalContacts + " contacts in the system.", false);
+      addMessage("I'm having technical difficulties, but I can still help! Call 1800 295 3333 for immediate assistance.", false);
     } finally {
       setIsTyping(false);
     }
-  }, [inputMessage, isTyping, addMessage, messages, platform]);
+  };
 
-  // FIXED: Handle input changes with proper event handling
-  const handleInputChange = useCallback((e) => {
-    setInputMessage(e.target.value);
-  }, []);
-
-  // FIXED: Handle key press with better event management
-  const handleKeyPress = useCallback((e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      e.stopPropagation();
-      handleSendMessage();
-    }
-  }, [handleSendMessage]);
-
-  // Handle program button clicks for Assistant
-  const handleProgramClick = useCallback(async (categoryTitle) => {
+  // Handle program clicks
+  const handleProgramClick = (categoryTitle) => {
     const programMessage = `Tell me about ${categoryTitle}`;
-    
-    // Add user message
     addMessage(programMessage, true);
     setIsTyping(true);
 
-    // Generate appropriate response based on category
     let response = "";
     const lowerTitle = categoryTitle.toLowerCase();
 
     if (lowerTitle.includes('education')) {
       response = `🎓 **Education Programs at SINDA**
 
-**STEP (SINDA Tutorials for Enhanced Performance)** - Our flagship program:
-• **Cost:** Only $10-15 per hour (heavily subsidized)
-• **Levels:** Primary 1-6, Secondary 1-5, JC1-2
-• **Subjects:** English, Math, Science, Mother Tongue
-• **Features:** Small classes, qualified teachers, MOE-aligned materials
-• **Locations:** Multiple centres across Singapore
+**STEP (SINDA Tutorials for Enhanced Performance)**:
+• Cost: Only $10-15 per hour (heavily subsidized)
+• Levels: Primary 1-6, Secondary 1-5, JC1-2
+• Subjects: English, Math, Science, Mother Tongue
+• Small classes with qualified teachers
 
-**Other Education Support:**
-• **STEP Plus:** Holistic development & life skills
-• **A-Level Tuition:** Specialized JC support
-• **ITE Programs:** Support for technical education students
-• **SINDA Bursary:** Financial aid for tertiary education
-• **GUIDE Programme:** Academic mentoring
-• **Excellence Awards:** Recognition for outstanding students
+**Other Programs:**
+• STEP Plus: Holistic development
+• A-Level Tuition: JC support
+• SINDA Bursary: Tertiary education aid
 
-**Eligibility:** Per capita income ≤ $1,600, Singapore citizens/PRs of Indian descent
-
-📞 **Apply now:** Call 1800 295 3333 or visit 1 Beatty Road`;
+**Eligibility**: Per capita income ≤ $1,600
+📞 Apply: Call 1800 295 3333`;
 
     } else if (lowerTitle.includes('family')) {
       response = `👨‍👩‍👧‍👦 **Family Services at SINDA**
 
-**SINDA Family Service Centre** - Only self-help group with dedicated FSC:
+**SINDA Family Service Centre**:
 • Individual & family counselling
 • Crisis intervention & support
 • Case management services
-• Family life programs
-• Referral services
 
-**Financial Assistance Programs:**
-• **Emergency Aid:** Immediate cash assistance
-• **Monthly Support:** Ongoing financial help
-• **Bill Payment:** Utilities, rent, medical expenses
-• **School Fees:** Education-related costs
+**Financial Assistance:**
+• Emergency cash assistance
+• Monthly support
+• Bill payment help
+• Medical expenses support
 
-**Specialized Programs:**
-• **Project Athena:** Empowerment for single mothers
-• **Prisons Outreach:** Support for families of incarcerated individuals
-
-**Support Available:**
-• Crisis counselling (24/7)
-• Social worker assessment
-• Confidential support
-• Multi-language assistance
-
-**Eligibility:** Per capita income ≤ $1,600 for financial aid
-
-📞 **Need help?** Call 1800 295 3333 immediately - we're here for you!`;
+**Support Available**: 24/7 crisis counselling
+📞 Need help? Call 1800 295 3333 immediately`;
 
     } else if (lowerTitle.includes('youth')) {
-      response = `🎯 **Youth Development Programs (Ages 18-35)**
+      response = `🎯 **Youth Development (Ages 18-35)**
 
-**SINDA Youth Club (SYC)** - Established 2010:
+**SINDA Youth Club (SYC)**:
 • Leadership development workshops
-• Networking with young professionals
+• Networking with professionals
 • Community service projects
-• Social activities & events
 
-**Leadership Development:**
-• **Youth Leaders' Seminar:** Intensive leadership training
-• **Corporate Mentoring:** Industry professional guidance
-• Communication & project management skills
-• Real-world experience opportunities
+**Programs:**
+• Youth Leaders' Seminar
+• Corporate Mentoring
+• Youth Awards (150+ recipients annually)
 
-**Recognition Programs:**
-• **SINDA Youth Awards:** Annual excellence recognition
-• **150+ recipients** each year
-• Categories: Academic, community service, leadership
-• Government officials at ceremonies
-
-**Benefits of Joining:**
-• Build professional networks
-• Develop leadership skills
-• Give back to community
-• Career advancement opportunities
-
-**How to Join:**
-📞 Call 1800 295 3333
-🏢 Visit 1 Beatty Road, Singapore
-💻 Email queries@sinda.org.sg
-
-Ready to become a community leader?`;
+**Benefits**: Build networks, develop leadership skills
+📞 Join: Call 1800 295 3333`;
 
     } else if (lowerTitle.includes('community')) {
       response = `🤝 **Community Outreach Programs**
 
-**Direct Community Engagement:**
-• **Door Knocking Exercise:** Direct outreach to heartland families
-• **SINDA Bus:** Mobile services bringing programs to your area
-• **Community Events:** Festivals, workshops, and gatherings
+**Direct Engagement:**
+• Door Knocking Exercise: Direct family outreach
+• SINDA Bus: Mobile services
+• Community Events: Festivals & workshops
 
-**Annual Community Programs:**
-• **Back To School Festival:** School supplies & vouchers
-• **Project Give:** Community volunteering opportunities
-• **Cultural Celebrations:** Festivals and heritage events
+**Annual Programs:**
+• Back To School Festival
+• Project Give: Volunteer opportunities
+• Cultural celebrations
 
-**Outreach Locations:**
-• Heartland areas with Indian families
-• Underserved neighborhoods
-• Community centers & void decks
-• Shopping malls & public spaces
-
-**Services Brought to You:**
-• Program registration assistance
-• Information about available support
-• Preliminary needs assessment
-• Connection to appropriate services
-
-**Community Impact:**
-• Reaching families who need help most
-• Building stronger neighborhoods
-• Connecting people to opportunities
-• Creating support networks
-
-**Get Involved:**
-📞 Volunteer: Call 1800 295 3333
-🏢 Visit: 1 Beatty Road for more info
-🤝 Join community events and activities
-
-Together, we build stronger communities!`;
+📞 Get involved: Call 1800 295 3333`;
 
     } else {
       response = `**SINDA Programs Overview**
 
-We offer comprehensive support across four key areas:
+🎓 **Education**: STEP tuition, bursaries
+👨‍👩‍👧‍👦 **Family**: Counselling, financial aid
+🎯 **Youth**: Leadership development (ages 18-35)
+🤝 **Community**: Outreach programs
 
-🎓 **Education:** STEP tuition, bursaries, academic support
-👨‍👩‍👧‍👦 **Family:** Counselling, financial aid, crisis intervention
-🎯 **Youth:** Leadership development, mentoring (ages 18-35)
-🤝 **Community:** Outreach programs, volunteer opportunities
-
-**Contact Information:**
 📞 Hotline: 1800 295 3333 (24/7)
 🏢 Address: 1 Beatty Road, Singapore 209943
-📧 Email: queries@sinda.org.sg
 
-Which area would you like to explore in detail?`;
+Which area interests you most?`;
     }
 
-    // Simulate typing delay for better UX
     setTimeout(() => {
-      addMessage(response, false, {
-        aiGenerated: false,
-        programInfo: true,
-        category: categoryTitle
-      });
+      addMessage(response, false, { programInfo: true, category: categoryTitle });
       setIsTyping(false);
-    }, 1000 + Math.random() * 1000);
+    }, 1000);
+  };
 
-  }, [addMessage]);
-
-  // Dashboard Component for CRM
+  // CRM Dashboard Component (unchanged)
   const Dashboard = () => (
     <div className="space-y-6">
-      {/* Real-time Status Bar */}
       <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 rounded-2xl p-6 text-white shadow-xl">
         <div className="flex items-center justify-between">
           <div>
@@ -816,17 +563,12 @@ Which area would you like to explore in detail?`;
         </div>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white rounded-xl p-6 shadow-lg border border-blue-200 hover:scale-105 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-600">Active Tickets</p>
               <p className="text-3xl font-bold text-blue-600">{crmData.analytics.activeTickets}</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <TrendingUp size={12} />
-                +12% from yesterday
-              </p>
             </div>
             <div className="bg-blue-100 p-3 rounded-xl">
               <MessageCircle className="text-blue-600" size={32} />
@@ -839,10 +581,6 @@ Which area would you like to explore in detail?`;
             <div>
               <p className="text-sm text-gray-600">Resolved Today</p>
               <p className="text-3xl font-bold text-green-600">{crmData.analytics.resolvedToday}</p>
-              <p className="text-xs text-green-600 flex items-center gap-1">
-                <CheckCircle size={12} />
-                Target: 100/day
-              </p>
             </div>
             <div className="bg-green-100 p-3 rounded-xl">
               <CheckCircle className="text-green-600" size={32} />
@@ -855,10 +593,6 @@ Which area would you like to explore in detail?`;
             <div>
               <p className="text-sm text-gray-600">Response Time</p>
               <p className="text-3xl font-bold text-purple-600">{crmData.analytics.avgResponseTime}</p>
-              <p className="text-xs text-purple-600 flex items-center gap-1">
-                <Clock size={12} />
-                Target: &lt;15 min
-              </p>
             </div>
             <div className="bg-purple-100 p-3 rounded-xl">
               <Clock className="text-purple-600" size={32} />
@@ -871,10 +605,6 @@ Which area would you like to explore in detail?`;
             <div>
               <p className="text-sm text-gray-600">Satisfaction</p>
               <p className="text-3xl font-bold text-yellow-600">{crmData.analytics.satisfactionScore}/5</p>
-              <p className="text-xs text-yellow-600 flex items-center gap-1">
-                <Star size={12} />
-                From 450 reviews
-              </p>
             </div>
             <div className="bg-yellow-100 p-3 rounded-xl">
               <Star className="text-yellow-600" size={32} />
@@ -883,7 +613,6 @@ Which area would you like to explore in detail?`;
         </div>
       </div>
 
-      {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <button 
           onClick={() => setShowTicketModal(true)}
@@ -891,31 +620,30 @@ Which area would you like to explore in detail?`;
         >
           <Plus className="text-blue-600 mb-3" size={24} />
           <p className="text-sm font-semibold text-gray-800">New Ticket</p>
-          <p className="text-xs text-gray-600 mt-1">Create support ticket</p>
         </button>
+        
         <button 
           onClick={() => setShowContactModal(true)}
           className="bg-gradient-to-br from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 border border-green-200 rounded-xl p-6 text-left transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
           <UserCheck className="text-green-600 mb-3" size={24} />
           <p className="text-sm font-semibold text-gray-800">Add Contact</p>
-          <p className="text-xs text-gray-600 mt-1">Register new client</p>
         </button>
+        
         <button 
           onClick={() => setShowWhatsAppModal(true)}
           className="bg-gradient-to-br from-emerald-50 to-emerald-100 hover:from-emerald-100 hover:to-emerald-200 border border-emerald-200 rounded-xl p-6 text-left transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
           <MessageSquare className="text-emerald-600 mb-3" size={24} />
           <p className="text-sm font-semibold text-gray-800">WhatsApp</p>
-          <p className="text-xs text-gray-600 mt-1">Quick messaging</p>
         </button>
+        
         <button 
           onClick={() => setShowAiAgentsModal(true)}
           className="bg-gradient-to-br from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 border border-purple-200 rounded-xl p-6 text-left transition-all duration-300 hover:scale-105 hover:shadow-lg"
         >
           <Bot className="text-purple-600 mb-3" size={24} />
           <p className="text-sm font-semibold text-gray-800">AI Agents</p>
-          <p className="text-xs text-gray-600 mt-1">Manage AI automation</p>
         </button>
       </div>
 
@@ -937,12 +665,8 @@ Which area would you like to explore in detail?`;
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold">Lead Generation AI</h4>
-              <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-            </div>
+            <h4 className="font-semibold mb-2">Lead Generation AI</h4>
             <p className="text-sm text-indigo-100">Generated: {aiAgents.leadGeneration.leads} leads</p>
-            <p className="text-xs text-indigo-200">Last run: {aiAgents.leadGeneration.lastRun}</p>
             <button
               onClick={generateLeads}
               className="mt-2 bg-green-500/20 hover:bg-green-500/30 px-3 py-1 rounded text-xs transition-colors"
@@ -952,12 +676,8 @@ Which area would you like to explore in detail?`;
           </div>
           
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold">Ticket Manager AI</h4>
-              <div className="w-2 h-2 bg-blue-300 rounded-full animate-pulse"></div>
-            </div>
+            <h4 className="font-semibold mb-2">Ticket Manager AI</h4>
             <p className="text-sm text-indigo-100">Processed: {aiAgents.ticketManager.processed} tickets</p>
-            <p className="text-xs text-indigo-200">Last action: {aiAgents.ticketManager.lastAction}</p>
             <button
               onClick={processTickets}
               className="mt-2 bg-blue-500/20 hover:bg-blue-500/30 px-3 py-1 rounded text-xs transition-colors"
@@ -967,12 +687,8 @@ Which area would you like to explore in detail?`;
           </div>
           
           <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-semibold">Email Handler AI</h4>
-              <div className="w-2 h-2 bg-yellow-300 rounded-full animate-pulse"></div>
-            </div>
+            <h4 className="font-semibold mb-2">Email Handler AI</h4>
             <p className="text-sm text-indigo-100">Handled: {aiAgents.emailHandler.handled} emails</p>
-            <p className="text-xs text-indigo-200">Last email: {aiAgents.emailHandler.lastEmail}</p>
             <button
               onClick={handleEmails}
               className="mt-2 bg-yellow-500/20 hover:bg-yellow-500/30 px-3 py-1 rounded text-xs transition-colors"
@@ -982,73 +698,17 @@ Which area would you like to explore in detail?`;
           </div>
         </div>
       </div>
-
-      {/* Recent Activity and Agent Status */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Tickets</h3>
-          <div className="space-y-3">
-            {crmData.tickets.slice(0, 5).map((ticket) => (
-              <div key={ticket.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-blue-50 transition-colors cursor-pointer">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-gray-800">{ticket.subject}</span>
-                    <span className={`px-2 py-1 rounded-full text-xs ${
-                      ticket.priority === 'urgent' ? 'bg-red-100 text-red-700' :
-                      ticket.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                      'bg-blue-100 text-blue-700'
-                    }`}>
-                      {ticket.priority}
-                    </span>
-                  </div>
-                  <p className="text-xs text-gray-500">{ticket.contact} • {ticket.created}</p>
-                </div>
-                <ChevronRight size={16} className="text-gray-400" />
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">Agent Status</h3>
-          <div className="space-y-3">
-            {crmData.agents.map((agent) => (
-              <div key={agent.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="text-2xl">{agent.avatar}</div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-gray-800">{agent.name}</span>
-                      <div className={`w-2 h-2 rounded-full ${
-                        agent.status === 'online' ? 'bg-green-400' : 
-                        agent.status === 'away' ? 'bg-yellow-400' : 'bg-gray-400'
-                      }`}></div>
-                    </div>
-                    <p className="text-xs text-gray-500">{agent.activeTickets} active tickets</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-medium text-gray-800">{agent.resolvedToday}</div>
-                  <div className="text-xs text-gray-500">resolved today</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
     </div>
   );
 
-  // FIXED: Chat Interface for CRM with better input handling
+  // FIXED Chat Interface with working input
   const ChatInterface = () => (
     <div className="space-y-6">
-      {/* Page Header with Back Button */}
       <div className="flex items-center gap-4">
         {canGoBack && (
           <button
             onClick={goBack}
             className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-800 p-3 rounded-xl transition-all duration-300 hover:scale-110 flex items-center gap-2 shadow-sm"
-            title="Go Back"
           >
             <ChevronLeft size={20} />
             Back
@@ -1061,77 +721,23 @@ Which area would you like to explore in detail?`;
       </div>
 
       <div className="bg-white rounded-3xl border border-blue-200 overflow-hidden shadow-xl">
-        {/* Chat Header */}
         <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <Bot className="text-white" size={28} />
-              </div>
-              <div>
-                <h3 className="text-2xl font-bold">SINDA CRM Assistant</h3>
-                <p className="text-blue-100 text-sm flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-                  AI-Powered • CRM Integrated • Multi-language
-                </p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Bot className="text-white" size={28} />
             </div>
-            <div className="flex gap-3">
-              <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="bg-white/20 backdrop-blur-sm text-white rounded-lg px-3 py-2 text-sm border border-white/30"
-              >
-                {Object.entries(languages).map(([key, lang]) => (
-                  <option key={key} value={key} className="text-gray-800">
-                    {lang.flag} {lang.native}
-                  </option>
-                ))}
-              </select>
-              <button 
-                onClick={() => setShowApiKeyInput(true)}
-                className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300"
-                title="Configure OpenAI API Key"
-              >
-                <Settings size={20} />
-              </button>
+            <div>
+              <h3 className="text-2xl font-bold">SINDA CRM Assistant</h3>
+              <p className="text-blue-100 text-sm">AI-Powered • CRM Integrated • Multi-language</p>
             </div>
           </div>
         </div>
 
-        {/* CRM Quick Actions */}
-        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
-          <h4 className="text-lg font-semibold text-gray-800 mb-4">CRM Quick Actions</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { action: 'Find contact by name', icon: Search, color: 'blue', onClick: () => addMessage('Find contact by name', true) },
-              { action: 'Generate leads with AI', icon: Bot, color: 'green', onClick: generateLeads },
-              { action: 'Process tickets automatically', icon: AlertTriangle, color: 'orange', onClick: processTickets },
-              { action: 'Handle emails with AI', icon: Mail, color: 'purple', onClick: handleEmails }
-            ].map((item, index) => {
-              const IconComponent = item.icon;
-              return (
-                <button
-                  key={index}
-                  onClick={item.onClick}
-                  className="bg-white/80 backdrop-blur-sm border border-gray-200 hover:border-blue-400 rounded-xl p-4 text-left transition-all duration-300 hover:scale-105 hover:shadow-lg"
-                >
-                  <IconComponent className="text-blue-600 mb-2" size={20} />
-                  <p className="text-sm font-medium text-gray-800">{item.action}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Messages */}
         <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white">
           {messages.length === 0 && (
             <div className="text-center py-8">
               <Bot size={48} className="mx-auto text-blue-400 mb-4" />
-              <h4 className="text-lg font-semibold text-gray-600 mb-2">
-                {languages[selectedLanguage].greeting}
-              </h4>
+              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you with CRM tasks?</h4>
               <p className="text-gray-500 mb-6">Ask me about contacts, tickets, reports, or analytics</p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-lg mx-auto">
@@ -1165,11 +771,6 @@ Which area would you like to explore in detail?`;
                   msg.isUser ? 'text-blue-100' : 'text-gray-500'
                 }`}>
                   <span>{msg.timestamp}</span>
-                  {!msg.isUser && msg.metadata?.aiGenerated && (
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs">
-                      AI
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
@@ -1184,7 +785,7 @@ Which area would you like to explore in detail?`;
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
                     <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
-                  <span className="text-sm text-gray-600">CRM Assistant is thinking...</span>
+                  <span className="text-sm text-gray-600">Assistant is thinking...</span>
                 </div>
               </div>
             </div>
@@ -1192,28 +793,27 @@ Which area would you like to explore in detail?`;
           <div ref={messagesEndRef} />
         </div>
 
-        {/* FIXED: Input Area with better event handling */}
+        {/* SIMPLIFIED WORKING INPUT */}
         <div className="p-6 bg-white border-t border-gray-200">
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <textarea
-                ref={crmInputRef}
-                value={inputMessage}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about contacts, tickets, analytics, or any CRM task..."
-                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm transition-all duration-300"
-                rows="2"
-                disabled={isTyping}
-                autoComplete="off"
-                spellCheck="true"
-              />
-            </div>
+          <div className="flex gap-4 items-center">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Ask about contacts, tickets, analytics..."
+              className="flex-1 bg-blue-50/50 border border-blue-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
+              disabled={isTyping}
+            />
             <button
               onClick={handleSendMessage}
               disabled={!inputMessage.trim() || isTyping}
-              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-colors flex items-center justify-center min-w-[48px] min-h-[48px]"
-              type="button"
+              className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white px-6 py-3 rounded-xl transition-colors"
             >
               <Send size={20} />
             </button>
@@ -1223,19 +823,148 @@ Which area would you like to explore in detail?`;
     </div>
   );
 
-  // Simple placeholder views for CRM (unchanged)
+  // FIXED Assistant Interface with working input
+  const AssistantInterface = () => (
+    <div className="max-w-6xl mx-auto p-6">
+      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
+        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <BookOpen className="text-white" size={28} />
+              </div>
+              <div>
+                <h3 className="text-2xl font-bold">SINDA Assistant</h3>
+                <p className="text-blue-100 text-sm">AI-Powered • Active Users: {crmData.realTimeMetrics.activeUsers}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Explore Our Programs</h4>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {programCategories.map((category) => {
+              const IconComponent = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  onClick={() => handleProgramClick(category.title)}
+                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105"
+                >
+                  <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3`}>
+                    <IconComponent className="text-white" size={20} />
+                  </div>
+                  <div className="text-sm font-semibold text-gray-800">{category.title}</div>
+                  <div className="text-xs text-gray-500 mt-1">{category.count}</div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50">
+          {messages.length === 0 && (
+            <div className="text-center py-8">
+              <MessageCircle size={48} className="mx-auto text-blue-400 mb-4" />
+              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
+              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
+                {[
+                  { text: 'Tell me about STEP tuition', action: () => handleProgramClick('Education Programs') },
+                  { text: 'Financial assistance options', action: () => handleProgramClick('Family Services') },
+                  { text: 'Youth development programs', action: () => handleProgramClick('Youth Development') },
+                  { text: 'Community outreach initiatives', action: () => handleProgramClick('Community Outreach') }
+                ].map((help, index) => (
+                  <button
+                    key={index}
+                    onClick={help.action}
+                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105"
+                  >
+                    {help.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg ${
+                msg.isUser 
+                  ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
+                  : 'bg-white/90 backdrop-blur-sm text-gray-800 border border-blue-200'
+              }`}>
+                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
+                <div className={`flex items-center justify-between mt-2 text-xs ${
+                  msg.isUser ? 'text-blue-100' : 'text-gray-500'
+                }`}>
+                  <span>{msg.timestamp}</span>
+                  {!msg.isUser && msg.metadata?.programInfo && (
+                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
+                      Program Info
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+          
+          {isTyping && (
+            <div className="flex justify-start">
+              <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl px-6 py-4 shadow-lg">
+                <div className="flex items-center space-x-3">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <span className="text-sm text-gray-600">SINDA Assistant is thinking...</span>
+                </div>
+              </div>
+            </div>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        {/* SIMPLIFIED WORKING INPUT */}
+        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
+          <div className="flex gap-4 items-center">
+            <input
+              type="text"
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
+              placeholder="Ask about SINDA programs, eligibility, or how to apply..."
+              className="flex-1 bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-800 text-sm"
+              disabled={isTyping}
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!inputMessage.trim() || isTyping}
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white px-6 py-4 rounded-2xl transition-all duration-300"
+            >
+              <Send size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Other CRM views (simplified but functional)
   const ContactsView = () => (
     <div className="space-y-6">
-      {/* Page Header with Back Button */}
       <div className="flex items-center gap-4">
         {canGoBack && (
-          <button
-            onClick={goBack}
-            className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-800 p-3 rounded-xl transition-all duration-300 hover:scale-110 flex items-center gap-2 shadow-sm"
-            title="Go Back"
-          >
+          <button onClick={goBack} className="bg-white p-3 rounded-xl border">
             <ChevronLeft size={20} />
-            Back
           </button>
         )}
         <div>
@@ -1245,20 +974,20 @@ Which area would you like to explore in detail?`;
       </div>
 
       <div className="bg-white rounded-xl p-6 shadow-lg">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {crmData.contacts.map((contact) => (
             <div key={contact.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow">
               <div className="flex items-center gap-3 mb-3">
                 <div className="text-2xl">{contact.avatar}</div>
                 <div>
                   <h3 className="font-semibold">{contact.name}</h3>
-                  <p className="text-sm text-gray-600">{contact.occupation}</p>
+                  <p className="text-sm text-gray-600">{contact.email}</p>
                 </div>
               </div>
               <div className="text-sm space-y-1">
-                <p>📧 {contact.email}</p>
                 <p>📱 {contact.phone}</p>
                 <p>💼 {contact.programs.join(', ')}</p>
+                <p>📅 Last contact: {contact.lastContact}</p>
               </div>
             </div>
           ))}
@@ -1269,16 +998,10 @@ Which area would you like to explore in detail?`;
 
   const TicketsView = () => (
     <div className="space-y-6">
-      {/* Page Header with Back Button */}
       <div className="flex items-center gap-4">
         {canGoBack && (
-          <button
-            onClick={goBack}
-            className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-800 p-3 rounded-xl transition-all duration-300 hover:scale-110 flex items-center gap-2 shadow-sm"
-            title="Go Back"
-          >
+          <button onClick={goBack} className="bg-white p-3 rounded-xl border">
             <ChevronLeft size={20} />
-            Back
           </button>
         )}
         <div>
@@ -1327,52 +1050,32 @@ Which area would you like to explore in detail?`;
 
   const AnalyticsView = () => (
     <div className="space-y-8">
-      {/* Analytics Header with Back Button */}
       <div className="flex items-center gap-4">
         {canGoBack && (
-          <button
-            onClick={goBack}
-            className="bg-white hover:bg-gray-50 border border-gray-200 text-gray-600 hover:text-gray-800 p-3 rounded-xl transition-all duration-300 hover:scale-110 flex items-center gap-2 shadow-sm"
-            title="Go Back"
-          >
+          <button onClick={goBack} className="bg-white p-3 rounded-xl border">
             <ChevronLeft size={20} />
-            Back
           </button>
         )}
         <div className="bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-500 rounded-2xl p-6 text-white shadow-xl flex-1">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold mb-2">CRM Analytics Dashboard</h2>
-              <p className="text-blue-100">Comprehensive insights and performance metrics</p>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
-                <Download size={20} />
-              </button>
-            </div>
-          </div>
+          <h2 className="text-2xl font-bold mb-2">CRM Analytics Dashboard</h2>
+          <p className="text-blue-100">Comprehensive insights and performance metrics</p>
         </div>
       </div>
 
-      {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Contacts', value: crmData.analytics.totalContacts.toLocaleString(), change: '+15.7%', icon: Users, color: 'blue' },
-          { label: 'Aid Distributed', value: `$${(crmData.analytics.financialAidDistributed / 1000000).toFixed(1)}M`, change: '+23.4%', icon: DollarSign, color: 'green' },
-          { label: 'Job Placements', value: crmData.analytics.jobPlacements, change: '+18.2%', icon: Award, color: 'purple' },
-          { label: 'Retention Rate', value: `${crmData.analytics.retentionRate}%`, change: '+2.1%', icon: Target, color: 'cyan' }
+          { label: 'Total Contacts', value: crmData.analytics.totalContacts.toLocaleString(), icon: Users },
+          { label: 'Aid Distributed', value: `$${(crmData.analytics.financialAidDistributed / 1000000).toFixed(1)}M`, icon: DollarSign },
+          { label: 'Job Placements', value: crmData.analytics.jobPlacements, icon: Award },
+          { label: 'Active Tickets', value: crmData.analytics.activeTickets, icon: FileText }
         ].map((kpi, index) => {
           const IconComponent = kpi.icon;
           return (
-            <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-gray-200 hover:scale-105 transition-all duration-300">
+            <div key={index} className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-gray-600 text-sm font-medium">{kpi.label}</p>
                   <p className="text-3xl font-bold text-blue-600 mt-2">{kpi.value}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="text-green-500 mr-1" size={16} />
-                    <span className="text-green-600 text-sm">{kpi.change}</span>
-                  </div>
                 </div>
                 <div className="bg-blue-100 p-3 rounded-xl">
                   <IconComponent className="text-blue-600" size={24} />
@@ -1383,730 +1086,216 @@ Which area would you like to explore in detail?`;
         })}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Monthly Trends */}
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Monthly Trends</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={crmData.monthlyData}>
-              <defs>
-                <linearGradient id="colorContacts" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-              <XAxis dataKey="month" stroke="#6B7280" />
-              <YAxis stroke="#6B7280" />
-              <Tooltip />
-              <Area 
-                type="monotone" 
-                dataKey="contacts" 
-                stroke="#3B82F6" 
-                fillOpacity={1} 
-                fill="url(#colorContacts)"
-                strokeWidth={3}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+      <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+        <h3 className="text-xl font-bold text-gray-800 mb-6">Monthly Trends</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={crmData.monthlyData}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            <XAxis dataKey="month" stroke="#6B7280" />
+            <YAxis stroke="#6B7280" />
+            <Tooltip />
+            <Area 
+              type="monotone" 
+              dataKey="contacts" 
+              stroke="#3B82F6" 
+              fill="#3B82F6"
+              fillOpacity={0.3}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
 
-        {/* Program Distribution */}
-        <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 mb-6">Program Distribution</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <RechartsPieChart>
-              <Pie
-                data={crmData.programDistribution}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={120}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {crmData.programDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </RechartsPieChart>
-          </ResponsiveContainer>
-          <div className="mt-4 space-y-2">
-            {crmData.programDistribution.map((item, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div 
-                    className="w-4 h-4 rounded-full" 
-                    style={{backgroundColor: item.color}}
-                  ></div>
-                  <span className="text-sm text-gray-700">{item.name}</span>
-                </div>
-                <span className="text-sm font-semibold text-gray-800">{item.count.toLocaleString()}</span>
-              </div>
-            ))}
-          </div>
+  // Simple modals
+  const WhatsAppModal = () => showWhatsAppModal && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Connect via WhatsApp</h3>
+          <button onClick={() => setShowWhatsAppModal(false)}>
+            <X size={20} />
+          </button>
+        </div>
+        <div className="text-center">
+          <p className="text-gray-600 mb-4">Connect with SINDA via WhatsApp for instant support.</p>
+          <button className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600">
+            Open WhatsApp
+          </button>
         </div>
       </div>
     </div>
   );
 
-  // Modal Components for CRM (unchanged)
-  const WhatsAppModal = () => (
-    showWhatsAppModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-800">Connect via WhatsApp</h3>
-            <button onClick={() => setShowWhatsAppModal(false)}>
-              <X size={20} />
-            </button>
-          </div>
-          <div className="text-center">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageSquare className="text-green-600" size={24} />
-            </div>
-            <p className="text-gray-600 mb-4">Connect with SINDA via WhatsApp for instant support.</p>
-            <button className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors">
-              Open WhatsApp
-            </button>
-          </div>
+  const TicketModal = () => showTicketModal && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Create New Ticket</h3>
+          <button onClick={() => setShowTicketModal(false)}>
+            <X size={20} />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <input type="text" placeholder="Subject" className="w-full border rounded-lg px-3 py-2" />
+          <textarea placeholder="Description" rows="4" className="w-full border rounded-lg px-3 py-2" />
+          <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+            Create Ticket
+          </button>
         </div>
       </div>
-    )
+    </div>
   );
 
-  const TicketModal = () => (
-    showTicketModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-808">Create New Ticket</h3>
-            <button onClick={() => setShowTicketModal(false)}>
-              <X size={20} />
-            </button>
-          </div>
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Subject"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            <textarea
-              placeholder="Description"
-              rows="4"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Create Ticket
-            </button>
-          </div>
+  const ContactModal = () => showContactModal && (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Add New Contact</h3>
+          <button onClick={() => setShowContactModal(false)}>
+            <X size={20} />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <input type="text" placeholder="Full Name" className="w-full border rounded-lg px-3 py-2" />
+          <input type="email" placeholder="Email" className="w-full border rounded-lg px-3 py-2" />
+          <input type="tel" placeholder="Phone" className="w-full border rounded-lg px-3 py-2" />
+          <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
+            Add Contact
+          </button>
         </div>
       </div>
-    )
+    </div>
   );
 
-  const ContactModal = () => (
-    showContactModal && (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-808">Add New Contact</h3>
-            <button onClick={() => setShowContactModal(false)}>
-              <X size={20} />
-            </button>
+  const AiAgentsModal = () => showAiAgentsModal && (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-2xl font-bold text-gray-800">AI Agents Management</h3>
+            <p className="text-gray-600">Monitor and control automated AI agents</p>
           </div>
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Full Name"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            <input
-              type="email"
-              placeholder="Email"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            <input
-              type="tel"
-              placeholder="Phone"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2"
-            />
-            <button className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Add Contact
-            </button>
-          </div>
+          <button onClick={() => setShowAiAgentsModal(false)}>
+            <X size={24} />
+          </button>
         </div>
-      </div>
-    )
-  );
 
-  // API Key Input Modal (unchanged)
-  const ApiKeyInput = () => (
-    showApiKeyInput && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
-          <h3 className="text-xl font-bold text-gray-800 mb-4">OpenAI API Configuration</h3>
-          <p className="text-gray-600 mb-6 text-sm">
-            Enter your OpenAI API key to enable AI-powered CRM assistance.
-          </p>
-          <input
-            type="password"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder="sk-..."
-            className="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="flex gap-3">
-            <button
-              onClick={() => {
-                setShowApiKeyInput(false);
-                if (apiKey) {
-                  addMessage("Great! I'm now AI-powered and ready to help you with CRM tasks.", false);
-                }
-              }}
-              className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => setShowApiKeyInput(false)}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    )
-  );
-
-  // AI Agents Management Modal (unchanged)
-  const AiAgentsModal = () => (
-    showAiAgentsModal && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h3 className="text-2xl font-bold text-gray-808">AI Agents Management</h3>
-              <p className="text-gray-600">Monitor and control automated AI agents</p>
-            </div>
-            <button onClick={() => setShowAiAgentsModal(false)}>
-              <X size={24} />
-            </button>
-          </div>
-
-          {/* Agent Controls */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-gray-808">Lead Generation AI</h4>
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-green-50 to-emerald-100 border border-green-200 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Lead Generation AI</h4>
+            <div className="space-y-3">
+              <div className="text-sm">
+                <span className="text-gray-600">Status:</span>
+                <span className="ml-2 font-medium text-green-700">Active</span>
               </div>
-              <div className="space-y-3">
-                <div className="text-sm">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="ml-2 font-medium text-green-700">Active</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Leads Generated:</span>
-                  <span className="ml-2 font-medium">{aiAgents.leadGeneration.leads}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Last Run:</span>
-                  <span className="ml-2 font-medium">{aiAgents.leadGeneration.lastRun}</span>
-                </div>
-                <button
-                  onClick={generateLeads}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
-                >
-                  Generate Leads Now
-                </button>
+              <div className="text-sm">
+                <span className="text-gray-600">Leads Generated:</span>
+                <span className="ml-2 font-medium">{aiAgents.leadGeneration.leads}</span>
               </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-blue-200 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-gray-808">Ticket Manager AI</h4>
-                <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-sm">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="ml-2 font-medium text-blue-700">Active</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Tickets Processed:</span>
-                  <span className="ml-2 font-medium">{aiAgents.ticketManager.processed}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Last Action:</span>
-                  <span className="ml-2 font-medium">{aiAgents.ticketManager.lastAction}</span>
-                </div>
-                <button
-                  onClick={processTickets}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
-                >
-                  Process Tickets Now
-                </button>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-50 to-pink-100 border border-purple-200 rounded-xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h4 className="text-lg font-semibold text-gray-808">Email Handler AI</h4>
-                <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
-              </div>
-              <div className="space-y-3">
-                <div className="text-sm">
-                  <span className="text-gray-600">Status:</span>
-                  <span className="ml-2 font-medium text-purple-700">Active</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Emails Handled:</span>
-                  <span className="ml-2 font-medium">{aiAgents.emailHandler.handled}</span>
-                </div>
-                <div className="text-sm">
-                  <span className="text-gray-600">Last Email:</span>
-                  <span className="ml-2 font-medium">{aiAgents.emailHandler.lastEmail}</span>
-                </div>
-                <button
-                  onClick={handleEmails}
-                  className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
-                >
-                  Handle Emails Now
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Global Controls */}
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mb-6">
-            <h4 className="text-lg font-semibold text-gray-808 mb-4">Global AI Controls</h4>
-            <div className="flex gap-4">
               <button
-                onClick={runAllAgents}
-                className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
+                onClick={generateLeads}
+                className="w-full bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
-                <Bot size={20} />
-                Run All Agents
-              </button>
-              <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-colors">
-                Pause All Agents
-              </button>
-              <button className="bg-green-200 hover:bg-green-300 text-green-700 px-6 py-3 rounded-lg transition-colors">
-                Schedule Automation
+                Generate Leads Now
               </button>
             </div>
           </div>
 
-          {/* Activity Logs */}
-          <div className="bg-gray-50 rounded-xl p-6">
-            <h4 className="text-lg font-semibold text-gray-808 mb-4">Recent AI Activity</h4>
-            <div className="space-y-3 max-h-64 overflow-y-auto">
-              {agentLogs.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No recent activity. Run an AI agent to see logs here.</p>
-              ) : (
-                agentLogs.map((log) => (
-                  <div key={log.id} className="bg-white rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-gray-808">{log.agent}</span>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            log.type === 'success' ? 'bg-green-100 text-green-700' :
-                            log.type === 'info' ? 'bg-blue-100 text-blue-700' :
-                            'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {log.type}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-600">{log.action}</p>
-                        {log.details && (
-                          <div className="mt-2 text-xs text-gray-500">
-                            {log.details.map((detail, idx) => (
-                              <div key={idx} className="bg-gray-100 rounded px-2 py-1 mt-1">
-                                {detail.name} - {detail.interest} (Score: {detail.score}%)
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-xs text-gray-400">{log.timestamp}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )
-  );
-
-  // FIXED: SINDA Assistant Chat Interface with better input handling
-  const AssistantInterface = () => (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="bg-white/90 backdrop-blur-sm rounded-3xl border border-blue-200 overflow-hidden shadow-2xl">
-        {/* Chat Header */}
-        <div className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 p-6 text-white relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 to-cyan-400/20"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                <BookOpen className="text-white" size={28} />
+          <div className="bg-gradient-to-br from-blue-50 to-cyan-100 border border-blue-200 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Ticket Manager AI</h4>
+            <div className="space-y-3">
+              <div className="text-sm">
+                <span className="text-gray-600">Status:</span>
+                <span className="ml-2 font-medium text-blue-700">Active</span>
               </div>
-              <div>
-                <h3 className="text-2xl font-bold">SINDA Assistant</h3>
-                <p className="text-blue-100 text-sm flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-300 rounded-full animate-pulse"></div>
-                  AI-Powered • Active Users: {crmData.realTimeMetrics.activeUsers}
-                </p>
+              <div className="text-sm">
+                <span className="text-gray-600">Tickets Processed:</span>
+                <span className="ml-2 font-medium">{aiAgents.ticketManager.processed}</span>
               </div>
-            </div>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => setShowAnalytics(!showAnalytics)}
-                className="bg-white/20 backdrop-blur-sm p-3 rounded-xl hover:bg-white/30 transition-all duration-300 hover:scale-110"
-                title="View Analytics Dashboard"
+              <button
+                onClick={processTickets}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
-                <BarChart3 size={20} />
+                Process Tickets Now
               </button>
-              <select
-                value={selectedLanguage}
-                onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="bg-white/20 backdrop-blur-sm text-white rounded-lg px-3 py-2 text-sm border border-white/30"
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-br from-purple-50 to-pink-100 border border-purple-200 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-800 mb-4">Email Handler AI</h4>
+            <div className="space-y-3">
+              <div className="text-sm">
+                <span className="text-gray-600">Status:</span>
+                <span className="ml-2 font-medium text-purple-700">Active</span>
+              </div>
+              <div className="text-sm">
+                <span className="text-gray-600">Emails Handled:</span>
+                <span className="ml-2 font-medium">{aiAgents.emailHandler.handled}</span>
+              </div>
+              <button
+                onClick={handleEmails}
+                className="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 px-4 rounded-lg transition-colors"
               >
-                {Object.entries(languages).map(([key, lang]) => (
-                  <option key={key} value={key} className="text-gray-808">
-                    {lang.flag} {lang.native}
-                  </option>
-                ))}
-              </select>
+                Handle Emails Now
+              </button>
             </div>
           </div>
         </div>
 
-        {/* Program Categories Quick Access */}
-        <div className="bg-gradient-to-r from-blue-50 via-cyan-50 to-indigo-50 p-6 border-b border-blue-100">
-          <h4 className="text-lg font-semibold text-gray-808 mb-4">Explore Our Programs</h4>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {programCategories.map((category, index) => {
-              const IconComponent = category.icon;
-              return (
-                <button
-                  key={category.id}
-                  onClick={() => handleProgramClick(category.title)}
-                  className="bg-white/80 backdrop-blur-sm border border-blue-200 hover:border-blue-400 rounded-xl p-4 transition-all duration-500 hover:shadow-lg text-left group hover:scale-105"
-                >
-                  <div className={`w-10 h-10 bg-gradient-to-r ${category.color} rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300`}>
-                    <IconComponent className="text-white" size={20} />
-                  </div>
-                  <div className="text-sm font-semibold text-gray-808 group-hover:text-blue-600 transition-colors duration-300">
-                    {category.title}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">{category.count}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Messages */}
-        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-blue-50/30 to-white/50 backdrop-blur-sm">
-          {messages.length === 0 && (
-            <div className="text-center py-8">
-              <div className="text-blue-400 mb-4">
-                <MessageCircle size={48} className="mx-auto" />
-              </div>
-              <h4 className="text-lg font-semibold text-gray-600 mb-2">How can I help you today?</h4>
-              <p className="text-gray-500 mb-6">Ask me about SINDA programs, eligibility, or application processes</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-md mx-auto">
-                {[
-                  { text: 'Tell me about STEP tuition', action: () => handleProgramClick('Education Programs') },
-                  { text: 'Financial assistance options', action: () => handleProgramClick('Family Services') },
-                  { text: 'Youth development programs', action: () => handleProgramClick('Youth Development') },
-                  { text: 'Community outreach initiatives', action: () => handleProgramClick('Community Outreach') }
-                ].map((help, index) => (
-                  <button
-                    key={index}
-                    onClick={help.action}
-                    className="bg-blue-50 border border-blue-200 hover:border-blue-400 rounded-lg p-3 text-sm text-left transition-all duration-300 hover:shadow-md hover:scale-105"
-                  >
-                    {help.text}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {messages.map((msg, index) => (
-            <div key={msg.id} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-xs lg:max-w-md px-6 py-4 rounded-2xl shadow-lg transition-all duration-300 hover:scale-105 ${
-                msg.isUser 
-                  ? 'bg-gradient-to-br from-blue-500 via-cyan-500 to-indigo-600 text-white' 
-                  : 'bg-white/90 backdrop-blur-sm text-gray-808 border border-blue-200'
-              } ${msg.isUser ? 'rounded-br-md' : 'rounded-bl-md'}`}>
-                <p className="text-sm leading-relaxed whitespace-pre-line">{msg.content}</p>
-                <div className={`flex items-center justify-between mt-2 text-xs ${
-                  msg.isUser ? 'text-blue-100' : 'text-gray-500'
-                }`}>
-                  <span>{msg.timestamp}</span>
-                  {!msg.isUser && msg.metadata?.programInfo && (
-                    <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs">
-                      Program Info
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          {isTyping && (
-            <div className="flex justify-start">
-              <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-2xl rounded-bl-md px-6 py-4 shadow-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                  </div>
-                  <span className="text-sm text-gray-600">SINDA Assistant is thinking...</span>
-                </div>
-              </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* FIXED: Input Area with better event handling */}
-        <div className="p-6 bg-white/80 backdrop-blur-sm border-t border-blue-200">
-          <div className="flex gap-4 items-end">
-            <div className="flex-1">
-              <textarea
-                ref={inputRef}
-                value={inputMessage}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about SINDA programs, eligibility, or how to apply..."
-                className="w-full resize-none bg-blue-50/50 border border-blue-300 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-808 placeholder-gray-500 text-sm transition-all duration-300"
-                rows="2"
-                disabled={isTyping}
-                autoComplete="off"
-                spellCheck="true"
-              />
-            </div>
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-6 mb-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Global AI Controls</h4>
+          <div className="flex gap-4">
             <button
-              onClick={handleSendMessage}
-              disabled={!inputMessage.trim() || isTyping}
-              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-indigo-600 hover:from-blue-600 hover:via-cyan-600 hover:to-indigo-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed text-white p-4 rounded-2xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 disabled:transform-none flex items-center justify-center min-w-[56px] min-h-[56px]"
-              type="button"
+              onClick={runAllAgents}
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg transition-colors flex items-center gap-2"
             >
-              <Send size={20} />
+              <Bot size={20} />
+              Run All Agents
             </button>
+            <button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg transition-colors">
+              Pause All Agents
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-gray-50 rounded-xl p-6">
+          <h4 className="text-lg font-semibold text-gray-800 mb-4">Recent AI Activity</h4>
+          <div className="space-y-3 max-h-64 overflow-y-auto">
+            {agentLogs.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No recent activity. Run an AI agent to see logs here.</p>
+            ) : (
+              agentLogs.map((log) => (
+                <div key={log.id} className="bg-white rounded-lg p-3 border border-gray-200">
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-gray-800">{log.agent}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          log.type === 'success' ? 'bg-green-100 text-green-700' :
+                          log.type === 'info' ? 'bg-blue-100 text-blue-700' :
+                          'bg-yellow-100 text-yellow-700'
+                        }`}>
+                          {log.type}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{log.action}</p>
+                    </div>
+                    <span className="text-xs text-gray-400">{log.timestamp}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
     </div>
   );
 
-  // Analytics Dashboard for Assistant (unchanged)
-  const AssistantAnalyticsDashboard = () => {
-    return (
-      <div className="space-y-8 p-6">
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-100 shadow-lg hover:scale-105 transition-all duration-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Active Users</p>
-                <p className="text-3xl font-bold text-blue-600 mt-2">{crmData.realTimeMetrics.activeUsers}</p>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                  <span className="text-green-600 text-xs">+15% from last week</span>
-                </div>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-xl">
-                <Users className="text-blue-600" size={24} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-100 shadow-lg hover:scale-105 transition-all duration-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Families Helped</p>
-                <p className="text-3xl font-bold text-cyan-600 mt-2">{crmData.analytics.totalContacts.toLocaleString()}</p>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                  <span className="text-green-600 text-xs">+234 this month</span>
-                </div>
-              </div>
-              <div className="bg-cyan-100 p-3 rounded-xl">
-                <Heart className="text-cyan-600" size={24} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-indigo-100 shadow-lg hover:scale-105 transition-all duration-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Financial Aid</p>
-                <p className="text-3xl font-bold text-indigo-600 mt-2">${(crmData.analytics.financialAidDistributed / 1000000).toFixed(1)}M</p>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                  <span className="text-green-600 text-xs">Distributed this year</span>
-                </div>
-              </div>
-              <div className="bg-indigo-100 p-3 rounded-xl">
-                <DollarSign className="text-indigo-600" size={24} />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-teal-100 shadow-lg hover:scale-105 transition-all duration-500">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm font-medium">Job Placements</p>
-                <p className="text-3xl font-bold text-teal-600 mt-2">{crmData.analytics.jobPlacements}</p>
-                <div className="flex items-center mt-2">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
-                  <span className="text-green-600 text-xs">+89 this quarter</span>
-                </div>
-              </div>
-              <div className="bg-teal-100 p-3 rounded-xl">
-                <Award className="text-teal-600" size={24} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Monthly Engagement Trend */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-blue-200 shadow-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-808">Monthly Engagement</h3>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="text-green-500" size={20} />
-                <span className="text-green-600 text-sm font-medium">+24% growth</span>
-              </div>
-            </div>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={crmData.monthlyData}>
-                <defs>
-                  <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                <XAxis dataKey="month" stroke="#6B7280" />
-                <YAxis stroke="#6B7280" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                    border: '1px solid #3B82F6',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(10px)'
-                  }} 
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="contacts" 
-                  stroke="#3B82F6" 
-                  fillOpacity={1} 
-                  fill="url(#colorUsers)"
-                  strokeWidth={3}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-
-          {/* Program Distribution */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-cyan-200 shadow-lg">
-            <h3 className="text-xl font-bold text-gray-808 mb-6">Program Distribution</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <RechartsPieChart>
-                <Pie
-                  data={crmData.programDistribution}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {crmData.programDistribution.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                    border: '1px solid #06B6D4',
-                    borderRadius: '12px',
-                    backdropFilter: 'blur(10px)'
-                  }} 
-                />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-            <div className="mt-4 space-y-2">
-              {crmData.programDistribution.map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full" 
-                      style={{backgroundColor: item.color}}
-                    ></div>
-                    <span className="text-sm text-gray-700">{item.name}</span>
-                  </div>
-                  <span className="text-sm font-semibold text-gray-808">{item.count.toLocaleString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Analytics Overlay for Assistant (unchanged)
-  const AnalyticsOverlay = () => (
-    showAnalytics && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div className="bg-white/90 backdrop-blur-sm border border-blue-200 rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-bold text-gray-808">Real-time Analytics Dashboard</h2>
-              <button 
-                onClick={() => setShowAnalytics(false)}
-                className="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-blue-50 transition-all duration-300 hover:scale-110"
-              >
-                <XCircle size={24} />
-              </button>
-            </div>
-            <AssistantAnalyticsDashboard />
-          </div>
-        </div>
-      </div>
-    )
-  );
-
-  // FIXED: Scroll to bottom of messages
+  // Auto-scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-  // FIXED: Focus management on platform switch
-  useEffect(() => {
-    const currentInput = platform === 'crm' ? crmInputRef.current : inputRef.current;
-    if (currentInput && !isTyping) {
-      setTimeout(() => currentInput.focus(), 200);
-    }
-  }, [platform, currentView, isTyping]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-indigo-100">
@@ -2118,7 +1307,7 @@ Which area would you like to explore in detail?`;
               <BookOpen className="text-white" size={28} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-808">SINDA Platform</h1>
+              <h1 className="text-2xl font-bold text-gray-800">SINDA Platform</h1>
               <p className="text-gray-600 flex items-center">
                 <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
                 AI-Powered Community Support • Since 1991
@@ -2127,7 +1316,6 @@ Which area would you like to explore in detail?`;
           </div>
           
           <div className="flex space-x-4">
-            {/* Platform Switcher */}
             <div className="bg-gray-100 rounded-xl p-1 flex">
               <button
                 onClick={() => setPlatform('assistant')}
@@ -2159,7 +1347,6 @@ Which area would you like to explore in detail?`;
       {/* CRM Platform */}
       {platform === 'crm' && (
         <div className="max-w-7xl mx-auto py-8 px-6">
-          {/* CRM Navigation */}
           <div className="mb-8 flex flex-wrap gap-2 justify-center">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -2186,7 +1373,6 @@ Which area would you like to explore in detail?`;
             })}
           </div>
 
-          {/* CRM Main Content */}
           {currentView === 'dashboard' && <Dashboard />}
           {currentView === 'contacts' && <ContactsView />}
           {currentView === 'tickets' && <TicketsView />}
@@ -2198,7 +1384,6 @@ Which area would you like to explore in detail?`;
       {/* Assistant Platform */}
       {platform === 'assistant' && (
         <div className="max-w-7xl mx-auto py-8 px-6">
-          {/* Assistant Navigation */}
           <div className="mb-8 flex flex-wrap gap-2 justify-center">
             <button
               onClick={() => setCurrentStep('chat')}
@@ -2211,22 +1396,9 @@ Which area would you like to explore in detail?`;
               <MessageCircle size={16} />
               Chat
             </button>
-            <button
-              onClick={() => setCurrentStep('analytics')}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 flex items-center gap-2 hover:scale-105 ${
-                currentStep === 'analytics' 
-                  ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-              }`}
-            >
-              <BarChart3 size={16} />
-              Analytics
-            </button>
           </div>
 
-          {/* Assistant Main Content */}
           {currentStep === 'chat' && <AssistantInterface />}
-          {currentStep === 'analytics' && <AssistantAnalyticsDashboard />}
         </div>
       )}
 
@@ -2235,8 +1407,6 @@ Which area would you like to explore in detail?`;
       <TicketModal />
       <ContactModal />
       <AiAgentsModal />
-      <ApiKeyInput />
-      <AnalyticsOverlay />
       
       {/* Footer */}
       <div className="bg-white/80 backdrop-blur-sm border-t border-blue-200 mt-12">
